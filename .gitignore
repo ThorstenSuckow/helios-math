@@ -1,4 +1,5 @@
 /cmake-build-debug
-/build-test/
-/build-test-ninja/
-/build-test-ninja-noscan/
+/build-test-check
+/build-test-llvm
+/build-test-ninja-check
+/.idea
