@@ -8,6 +8,8 @@ if(PROJECT_IS_TOP_LEVEL)
 endif()
 
 include(CTest)
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 if(CMAKE_IFC_OUTPUT_DIRECTORY)
     file(MAKE_DIRECTORY "${CMAKE_IFC_OUTPUT_DIRECTORY}")
@@ -42,12 +44,54 @@ endif()
 target_include_directories(helios_math PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
         $<BUILD_INTERFACE:${HELIOS_MATH_GENERATED_INCLUDE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+install(TARGETS helios_math
+        EXPORT helios-mathTargets
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        FILE_SET modules DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+install(FILES
+        "${HELIOS_MATH_GENERATED_INCLUDE_DIR}/helios-engine-config.h"
+        "${HELIOS_MATH_GENERATED_INCLUDE_DIR}/helios-math-config.h"
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}"
+)
+
+set(HELIOS_MATH_INSTALL_CMAKEDIR "${CMAKE_INSTALL_LIBDIR}/cmake/helios-math")
+
+configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/helios-mathConfig.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/helios-mathConfig.cmake"
+        INSTALL_DESTINATION "${HELIOS_MATH_INSTALL_CMAKEDIR}"
+)
+
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/helios-mathConfigVersion.cmake"
+        VERSION "0.1.0"
+        COMPATIBILITY SameMajorVersion
+)
+
+install(EXPORT helios-mathTargets
+        FILE helios-mathTargets.cmake
+        NAMESPACE helios::
+        DESTINATION "${HELIOS_MATH_INSTALL_CMAKEDIR}"
+)
+
+install(FILES
+        "${CMAKE_CURRENT_BINARY_DIR}/helios-mathConfig.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/helios-mathConfigVersion.cmake"
+        DESTINATION "${HELIOS_MATH_INSTALL_CMAKEDIR}"
 )
 
 if(BUILD_TESTING)
     include(FetchContent)
 
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     FetchContent_Declare(
             googletest
             GIT_REPOSITORY https://github.com/google/googletest.git
