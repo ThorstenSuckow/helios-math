@@ -15,7 +15,7 @@ import helios.math.TransformType;
 import :vec3;
 import :vec4;
 
-
+import helios.math.utils;
 import helios.math.concepts;
 
 
@@ -176,19 +176,16 @@ export namespace helios::math {
          * otherwise false.
          *
          * @see https://realtimecollisiondetection.net/blog/?p=89
-         *
-         * @todo account for abs (values close to zero) and rel
-         * (larger values), move EPSILON to global constant
          */
         constexpr bool same(const mat4<T>& rgt) const {
 
-            static const T EPSILON = static_cast<T>(0.00001);
+            static const T eps = static_cast<T>(helios::math::EPSILON_LENGTH);
 
             const auto* leftPtr = value_ptr(*this);
             const auto* rgtPtr  = value_ptr(rgt);
 
             for (int i = 0; i < 16; i++) {
-                if (std::fabs(leftPtr[i] - rgtPtr[i])  > EPSILON) {
+                if (std::fabs(leftPtr[i] - rgtPtr[i])  > eps) {
                     return false;
                 }
             }
@@ -261,6 +258,24 @@ export namespace helios::math {
                 m(1, 0) * v[0] + m(1, 1) * v[1] + m(1, 2) * v[2] + m(1, 3)  * v[3],
                 m(2, 0) * v[0] + m(2, 1) * v[1] + m(2, 2) * v[2] + m(2, 3)  * v[3],
                 m(3, 0) * v[0] + m(3, 1) * v[1] + m(3, 2) * v[2] + m(3, 3)  * v[3]
+            };
+        }
+
+
+        /**
+         * @brief Performs matrix-scalar-multiplication with a `T v`.
+         *
+         * @param v The value used for scaling each matrix component.
+         *
+         * @return A new `mat4<T>`, where each component is scaled by v.
+         */
+        constexpr mat4<T> operator*(const T v) const {
+            const auto m = *this;
+            return mat4<T>{
+                m(0, 0) * v, m(0, 1) * v, m(0, 2) * v, m(0, 3)  * v,
+                m(1, 0) * v, m(1, 1) * v, m(1, 2) * v, m(1, 3)  * v,
+                m(2, 0) * v, m(2, 1) * v, m(2, 2) * v, m(2, 3)  * v,
+                m(3, 0) * v, m(3, 1) * v, m(3, 2) * v, m(3, 3)  * v
             };
         }
 
