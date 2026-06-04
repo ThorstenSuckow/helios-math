@@ -153,6 +153,20 @@ export namespace helios::math {
         return vec2<T>{v[0], v[1]};
     }
 
+    /**
+     * @brief Multiplies a 4D vector by a scalar value.
+     *
+     * @tparam T The numeric type of the vector components.
+     * @param v The vec4<T> vector to be multiplied.
+     * @param n The scalar value to multiply the vector by.
+     *
+     * @return a new vec4<T> instance representing the result of the scalar
+     * multiplication.
+     */
+    template<helios::math::concepts::IsNumeric T>
+    constexpr vec4<T> operator*(const vec4<T>& v, const T n) noexcept {
+        return vec4<T>{v[0] * n, v[1] * n, v[2] * n, v[3] * n};
+    }
 
     /**
      * @brief Returns a const pointer to the first element of the vector's components.
