@@ -5,14 +5,39 @@
 module;
 
 #include <cmath>
+#include <array>
+#include <utility>
 
 export module helios.math.transform:camera;
 
 import helios.math.types;
+import helios.math.TransformType;
 import helios.math.utils;
 
 
 export namespace helios::math {
+
+    /**
+     * @brief Enum representing the six planes of a view frustum.
+     */
+    enum class FrustumPlanePosition : u_int8_t {
+        Near,
+        Far,
+        Left,
+        Right,
+        Top,
+        Bottom
+    };
+
+    /**
+     * @brief Struct for providing FrustumPlane information, i.e. it's normal (facing inward)
+     * and the distance of the plane to the origin.
+     */
+    struct FrustumPlane {
+        helios::math::vec3f normal{};
+        float distance{};
+    };
+
 
     /**
      * @brief Computes the 4x4 perspective projection matrix based on the specified
@@ -32,15 +57,15 @@ export namespace helios::math {
      *
      * @see https://thorsten.suckow-homberg.de/docs/articles/computer-graphics/from-camera-to-clip-space-derivation-of-the-projection-matrices
      */
-    inline mat4f perspective(float fovY, float aspect, float zNear, float zFar) noexcept {
+    inline mat4f perspective(const float fovY, const float aspect, const float zNear, const float zFar) noexcept {
 
-        float f = 1 / std::tan(fovY/2);
+        const float f = 1 / std::tan(fovY/2);
 
         return mat4f{
             f/aspect, 0.0f, 0.0f, 0.0f,
             0.0f, f, 0.0f, 0.0f,
-            0.0f, 0.0f , -(zFar + zNear)/(zFar - zNear), -1.0f,
-            0.0f, 0.0f, -2 * (zFar * zNear) / (zFar - zNear), 0.0f
+            0.0f, 0.0f , (zFar + zNear)/(zFar - zNear), 1.0f,
+            0.0f, 0.0f, - 2.0f * (zFar * zNear) / (zFar - zNear), 0.0f
         };
     }
 
@@ -62,6 +87,8 @@ export namespace helios::math {
      * @param zFar The distance to the far clipping plane (default: 100.0).
      *
      * @return A 4x4 orthographic projection matrix.
+     *
+     * @todo check lefthandedness according to project conventions
      *
      * @see perspective()
      */
@@ -104,7 +131,7 @@ export namespace helios::math {
      * @return
      */
     inline mat4f lookAt(const vec3f& eye, const vec3f& center, const vec3f& up) noexcept {
-        const auto z = (eye - center).normalize();
+        const auto z = (center - eye).normalize();
         const auto x = cross(up, z).normalize();
         const auto y = cross(z, x).normalize();
 
@@ -114,6 +141,50 @@ export namespace helios::math {
             x[2], y[2], z[2], 0.0f,
             -dot(x, eye), -dot(y, eye), -dot(z, eye), 1.0f,
         };
+    }
+
+
+    /**
+     * @brief Computes the frustum planes in camera space, based on the passed arguments.
+     *
+     *
+     * @param fovY
+     * @param aspect
+     * @param zNear
+     * @param zFar
+     * @param viewMatrix
+     *
+     * @return Array indexed by FrustumPlanes::Top/Bottom/Near/Far/Left/Right
+     */
+    inline std::array<FrustumPlane, 6> frustumPlanes(
+        const float fovY, const float aspect, const float zNear, const float zFar, const helios::math::mat4f& viewMatrix) noexcept {
+
+        auto arr = std::array<FrustumPlane, 6>{};
+
+        const auto g = 1.0f / std::tan(fovY / 2.0f);
+        const auto s = aspect;
+
+        const auto translation = viewMatrix.translation().toVec4(1.0f);
+        const auto cameraRotation = viewMatrix.decompose(TransformType::Rotation).transpose();
+        const auto eye = (cameraRotation * translation).toVec3() * -1.0f;
+
+        const auto right = helios::math::vec3f{cameraRotation(0, 0), cameraRotation(1, 0), cameraRotation(2, 0)};
+        const auto up = helios::math::vec3f{cameraRotation(0, 1), cameraRotation(1, 1), cameraRotation(2, 1)};
+        const auto forward = helios::math::vec3f{cameraRotation(0, 2), cameraRotation(1, 2), cameraRotation(2, 2)};
+
+        static auto makePlane = [](helios::math::vec3f normal, const helios::math::vec3f& point) noexcept {
+            normal = normal.normalize();
+            return FrustumPlane{normal, dot(normal, point)};
+        };
+
+        arr[std::to_underlying(FrustumPlanePosition::Near)]    = makePlane(forward, eye + forward * zNear);
+        arr[std::to_underlying(FrustumPlanePosition::Far)]     = makePlane(forward * -1.0f, eye + forward * zFar);
+        arr[std::to_underlying(FrustumPlanePosition::Left)]    = makePlane(g * right + s * forward, eye);
+        arr[std::to_underlying(FrustumPlanePosition::Right)]   = makePlane(-g * right + s * forward, eye);
+        arr[std::to_underlying( FrustumPlanePosition::Bottom)] = makePlane(g * up + forward, eye);
+        arr[std::to_underlying(FrustumPlanePosition::Top)]     = makePlane(-g * up + forward, eye);
+
+        return arr;
     }
 
 }
