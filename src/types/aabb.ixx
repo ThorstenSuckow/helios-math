@@ -116,6 +116,17 @@ export namespace helios::math {
         }
 
         /**
+         * @brief Returns the half-extent of the AABB, i.e. the vector from the center
+         * to the max corner.
+         *
+         * @return The extension of the AABB, based on it's center point.
+         */
+        [[nodiscard]] constexpr helios::math::vec3<T> extent() const noexcept {
+            return (max_ - min_) * static_cast<T>(0.5);
+        }
+
+
+        /**
          * @brief Computes the size of the AABB over all axes.
          *
          * @return A vector representing the width, height, and depth of the AABB.
