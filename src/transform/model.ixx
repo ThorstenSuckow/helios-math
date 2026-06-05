@@ -80,7 +80,7 @@ export namespace helios::math {
      * @return
      */
      constexpr mat4f translate(const mat4f& model, const vec3f& v) noexcept {
-         mat4 t = model;
+         mat4f t = model;
          t(0, 3) += t(0,0) * v[0] + t(0, 1) * v[1] + t(0, 2) * v[2];
          t(1, 3) += t(1,0) * v[0] + t(1, 1) * v[1] + t(1, 2) * v[2];
          t(2, 3) += t(2,0) * v[0] + t(2, 1) * v[1] + t(2, 2) * v[2];
