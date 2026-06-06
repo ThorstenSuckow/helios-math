@@ -1,3 +1,5 @@
+#define GLM_FORCE_LEFT_HANDED
+
 #include <gtest/gtest.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
