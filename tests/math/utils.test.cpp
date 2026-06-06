@@ -8,3 +8,8 @@ namespace math = helios::math;
 TEST(UtilsTest, radians) {
     EXPECT_FLOAT_EQ(math::radians(90.0f), std::numbers::pi / 2.0f);
 }
+
+
+TEST(UtilsTest, shortestPath) {
+    EXPECT_FLOAT_EQ(math::shortestAngle(-170.0f, 170.0f), -20.0f);
+}
