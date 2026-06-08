@@ -212,11 +212,24 @@ export namespace helios::math {
          * @todo account for abs (values close to zero) and rel
          * (larger values), move epsilon to global constant?
          */
-        constexpr bool same(const vec3<T>& rgt, T epsilon = 0.0001) const {
+        constexpr bool same(const vec3<T>& rgt, const T epsilon = static_cast<T>(EPSILON_LENGTH)) const noexcept requires std::floating_point<T> {
             return std::fabs(v[0] - rgt[0]) <= epsilon &&
                    std::fabs(v[1] - rgt[1]) <= epsilon &&
                    std::fabs(v[2] - rgt[2]) <= epsilon;
         }
+
+        /**
+         * @brief Compares vectors with exact component equality for integral types.
+         *
+         * @param rgt Vector to compare against.
+         * @return `true` if all components match exactly; otherwise `false`.
+         */
+        constexpr bool same(const vec3<T>& rgt) const noexcept requires std::integral<T> {
+            return v[0] == rgt[0] &&
+                   v[1] == rgt[1] &&
+                   v[2] == rgt[2];
+        }
+
 
         /**
          * @brief Returns a new vector with the y-component negated.
