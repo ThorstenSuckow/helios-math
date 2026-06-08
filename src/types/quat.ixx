@@ -60,9 +60,9 @@ export namespace helios::math {
             const auto z = vec3<T>{static_cast<T>(0), static_cast<T>(0), static_cast<T>(1)};
 
             if constexpr (std::same_as<TFrameRelation, Intrinsic>) {
-                return quat<T>(x, xAngle) * quat<T>(y, yAngle) * quat<T>(z, zAngle);
+                return (fromAxisAngle(x, xAngle) * fromAxisAngle(y, yAngle) * fromAxisAngle(z, zAngle)).normalized();
             } else {
-                return quat<T>(z, zAngle) * quat<T>(y, yAngle) * quat<T>(x, xAngle);
+                return (fromAxisAngle(z, zAngle) * fromAxisAngle(y, yAngle) * fromAxisAngle(x, xAngle)).normalized();
             }
 
         }
@@ -83,7 +83,7 @@ export namespace helios::math {
          * @param angle Rotation angle in radians.
          * @return Quaternion representing the axis-angle rotation.
          */
-        static constexpr quat<T> fromAxisAngle(const helios::math::vec3f v, const float angle) noexcept {
+        static constexpr quat<T> fromAxisAngle(const helios::math::vec3<T> v, const T angle) noexcept {
 
             const auto rad = angle * static_cast<T>(0.5);
 
