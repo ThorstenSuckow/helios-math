@@ -5,8 +5,9 @@
 module;
 
 #include <cassert>
-#include <memory>
 #include <cstddef>
+#include <cmath>
+#include <concepts>
 
 
 export module helios.math.types:vec4;
@@ -141,6 +142,42 @@ export namespace helios::math {
          */
         [[nodiscard]] vec2<T> toVec2() const noexcept;
 
+        /**
+         * @brief Compares this vector's elements with the rgt vector considering
+         * an epsilon value.
+         * Returns true if for all elements the equation |a-b| <= epsilon
+         * holds.
+         *
+         * @param rgt The other vector to compare with this vector for equality.
+         *
+         * @return True if the elements of the vectors are considered equal,
+         * otherwise false.
+         *
+         * @see https://realtimecollisiondetection.net/blog/?p=89
+         *
+         * @todo account for abs (values close to zero) and rel
+         * (larger values), move epsilon to global constant?
+         */
+        constexpr bool same(const vec4<T>& rgt, const T epsilon = static_cast<T>(EPSILON_LENGTH)) const noexcept requires std::floating_point<T> {
+            return std::fabs(v[0] - rgt[0]) <= epsilon &&
+                   std::fabs(v[1] - rgt[1]) <= epsilon &&
+                   std::fabs(v[2] - rgt[2]) <= epsilon &&
+                   std::fabs(v[3] - rgt[3]) <= epsilon;
+        }
+
+        /**
+         * @brief Compares vectors with exact component equality for integral types.
+         *
+         * @param rgt Vector to compare against.
+         * @return `true` if all components match exactly; otherwise `false`.
+         */
+        constexpr bool same(const vec4<T>& rgt) const noexcept requires std::integral<T> {
+            return v[0] == rgt[0] &&
+                   v[1] == rgt[1] &&
+                   v[2] == rgt[2] &&
+                   v[3] == rgt[3];
+        }
+
     };
 
     template<helios::math::concepts::IsNumeric T>
@@ -169,11 +206,11 @@ export namespace helios::math {
     }
 
     /**
-     * @brief Returns a const pointer to the first element of the vector's components.
+     * @brief Returns a pointer to the first component of a vector.
      *
-     * Useful for APIs that expect a pointer to vector data, like OpenGL
-     * @param m A reference to the `vec4<T>` vector.
-     * @tparam T The numeric type of the vector components.
+     * @tparam T Numeric component type.
+     * @param m Vector instance.
+     * @return Pointer to contiguous component storage.
      */
     template<helios::math::concepts::IsNumeric T>
     const T* value_ptr(const vec4<T>& m) noexcept {
