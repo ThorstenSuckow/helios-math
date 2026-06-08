@@ -17,6 +17,16 @@ import :mat4;
 export namespace helios::math {
 
     /**
+     * @brief Marker tag for intrinsic Euler-angle composition.
+     */
+    struct Intrinsic{};
+
+    /**
+     * @brief Marker tag for extrinsic Euler-angle composition.
+     */
+    struct Extrinsic{};
+
+    /**
      * @brief Quaternion with scalar part `w` and vector part `v`.
      *
      * @tparam T Floating-point scalar type.
@@ -31,6 +41,58 @@ export namespace helios::math {
 
 
     public:
+
+        /**
+         * @brief Creates a quaternion from Euler angles.
+         *
+         * @tparam TFrameRelation Rotation composition mode (`Intrinsic` or `Extrinsic`).
+         * @param xAngle Rotation angle around the x-axis in radians.
+         * @param yAngle Rotation angle around the y-axis in radians.
+         * @param zAngle Rotation angle around the z-axis in radians.
+         * @return Quaternion representing the composed rotation.
+         */
+        template<typename TFrameRelation>
+        requires (std::same_as<TFrameRelation, Intrinsic> || std::same_as<TFrameRelation, Extrinsic>)
+        static constexpr quat<T> fromEulerAngles(const T xAngle, const T yAngle, const T zAngle) noexcept {
+
+            const auto x = vec3<T>{static_cast<T>(1), static_cast<T>(0), static_cast<T>(0)};
+            const auto y = vec3<T>{static_cast<T>(0), static_cast<T>(1), static_cast<T>(0)};
+            const auto z = vec3<T>{static_cast<T>(0), static_cast<T>(0), static_cast<T>(1)};
+
+            if constexpr (std::same_as<TFrameRelation, Intrinsic>) {
+                return quat<T>(x, xAngle) * quat<T>(y, yAngle) * quat<T>(z, zAngle);
+            } else {
+                return quat<T>(z, zAngle) * quat<T>(y, yAngle) * quat<T>(x, xAngle);
+            }
+
+        }
+
+        /**
+         * @brief Returns the identity quaternion.
+         *
+         * @return Quaternion representing no rotation.
+         */
+        static constexpr quat<T> identity() noexcept {
+            return quat<T>{vec3<T>{static_cast<T>(0), static_cast<T>(0), static_cast<T>(0)}, static_cast<T>(1)};
+        }
+
+        /**
+         * @brief Creates a quaternion from axis-angle representation.
+         *
+         * @param v Rotation axis (normalized internally).
+         * @param angle Rotation angle in radians.
+         * @return Quaternion representing the axis-angle rotation.
+         */
+        static constexpr quat<T> fromAxisAngle(const helios::math::vec3f v, const float angle) noexcept {
+
+            const auto rad = angle * static_cast<T>(0.5);
+
+            return quat<T>{
+                std::sin(rad) * v.normalize(),
+                std::cos(rad)
+            };
+
+        }
 
         /**
          * @brief Constructs a quaternion from vector and scalar parts.
@@ -63,7 +125,7 @@ export namespace helios::math {
          * @return Conjugated quaternion with negated vector part.
          */
         [[nodiscard]] constexpr quat<T> conjugate() const noexcept {
-            return quat<T>{-v_, w_};
+            return quat<T>{v_ * static_cast<T>(-1), w_};
         }
 
 
@@ -91,7 +153,9 @@ export namespace helios::math {
          * @return Quaternion length.
          */
         [[nodiscard]] constexpr T length() const noexcept {
-            return static_cast<T>(std::sqrt(v_.x * v_.x + v_.y * v_.y + v_.z * v_.z + w_ * w_));
+            return static_cast<T>(std::sqrt(
+                v_[0] * v_[0] + v_[1] * v_[1] + v_[2] * v_[2] + w_ * w_
+            ));
         }
 
         /**
@@ -106,7 +170,6 @@ export namespace helios::math {
 
         /**
          * @brief Converts the (normalized) quaternion to a 4x4 rotation matrix.
-         *
          *
          * @return Rotation matrix derived from the normalized quaternion.
          */
@@ -154,9 +217,9 @@ export namespace helios::math {
          * @brief Rotates a vector by this (normalized) quaternion.
          *
          * @param v Vector to rotate.
-         * @return Rotated vector encoded in the result value.
+         * @return Rotated vector.
          */
-        constexpr quat<T> rotate(const vec3<T> v) const noexcept {
+        [[nodiscard]] constexpr vec3<T> rotate(const vec3<T> v) const noexcept {
             const auto q_norm = normalized();
             const auto other = quat<T>{v, 0};
 
@@ -166,6 +229,14 @@ export namespace helios::math {
 
     };
 
+    /**
+     * @brief Single-precision quaternion.
+     */
+    using quatf = quat<float>;
 
+    /**
+     * @brief Double-precision quaternion.
+     */
+    using quatd = quat<double>;
 
 }
