@@ -43,13 +43,13 @@ export namespace helios::math {
          * Components are stored in column-major order, that is, each 4 subsequent elements
          * represent a matrix column.
          */
-        T m[16];
+        T m[16]{};
 
     public:
         /**
          * @brief Default constructor. Initializes all components to 0.
          */
-        explicit constexpr mat4() noexcept : m{} {};
+        constexpr mat4() noexcept : m{} {};
 
         /**
          * @brief Creates a diagonal matrix. The diagonal components are initialized
