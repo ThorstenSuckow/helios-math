@@ -11,6 +11,7 @@ projection utilities, and small math helpers used by rendering and runtime modul
 
 - `vec2`, `vec3`, `vec4` vector types
 - `mat4` matrix type with column-major storage
+- Quaternion type and helpers for rotation composition/workflows
 - Axis-aligned bounding-box types
 - Model transforms (`translate`, `rotate`, `scale`)
 - Camera transforms (`perspective`, `orthographic`, `lookAt`)
