@@ -270,6 +270,16 @@ export namespace helios::math {
         }
 
         /**
+         * @brief Returns a new vector with the z-component replaced by the given value.
+         *
+         * @param z The new z value.
+         * @return A new vec3<T> with (x, y, z).
+         */
+        constexpr helios::math::vec3<T> withZ(T z) const noexcept {
+            return helios::math::vec3<T>{v[0], v[1], z};
+        }
+
+        /**
          * @brief Checks if this vector is normalized (unit length).
          *
          * @details A vector is considered normalized if its squared length
