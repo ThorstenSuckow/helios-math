@@ -20,7 +20,7 @@ export namespace helios::math {
     /**
      * @brief Enum representing the six planes of a view frustum.
      */
-    enum class FrustumPlanePosition : u_int8_t {
+    enum class FrustumPlanePosition : uint8_t {
         Near,
         Far,
         Left,
