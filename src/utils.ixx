@@ -6,6 +6,7 @@ module;
 
 #include <cmath>
 #include <numbers>
+#include <type_traits>
 
 export module helios.math.utils;
 
@@ -54,7 +55,18 @@ export namespace helios::math {
      * @return The shortest angle between from and to
      */
     constexpr float shortestAngle(const float from, const float to) noexcept {
+
         const float x = to - from;
+
+        // consteval required for MSVC since constexpr
+        // for std::floor only works on Mac
+        if consteval {
+            const float y = (x + 180.0f) / 360.0f;
+            const auto yi = static_cast<long long>(y);
+            const float floored = static_cast<float>(y >= 0.0f ? yi : yi - 1);
+            return x - 360.0f * floored;
+        }
+
         return x - 360.0f * std::floor((x + 180.0f) / 360.0f);
     }
 
