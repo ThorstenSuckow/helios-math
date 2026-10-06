@@ -194,6 +194,11 @@ export namespace helios::math {
             return v[0] == rgt[0] && v[1] == rgt[1] && v[2] == rgt[2];
         }
 
+        constexpr vec3<T> operator+=(const vec3<T>& rgt) noexcept {
+            v[0] += rgt[0]; v[1] += rgt[1]; v[2] += rgt[2];
+            return *this;
+        }
+
 
         /**
          * @brief Compares this vector's elements with the rgt vector considering
@@ -375,7 +380,6 @@ export namespace helios::math {
     constexpr vec3<T> operator+(const vec3<T>& v1, const vec3<T>& v2) noexcept {
         return vec3<T>{v1[0] + v2[0], v1[1] + v2[1], v1[2] + v2[2]};
     }
-
 
     /**
      * @brief Computes the cross product of two 3D vectors.
