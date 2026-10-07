@@ -341,6 +341,48 @@ export namespace helios::math {
     }
 
     /**
+     * @brief Computes the overlap normal for two AABBs.
+     *
+     * @details The overlap normal is aligned with the axis of minimum overlap. Its sign is
+     * computed by checking whether b's center lies on the positive or negative side
+     * of a's center along that axis, resulting in a normal pointing from a to b.
+     *
+     * The overlap is required for determining the minimum translation along which
+     * both AABBs would have to be separated from each other.
+     *
+     * The normal can be used for checking whether two AABBs with velocity vectors
+     * are moving towards or away from each other along the normal. For the relative
+     * velocity vRelative = vB - vA, a negative dot product with the normal means
+     * that both AABBs are approaching each other along the normal, while a positive
+     * value means that they are separating.
+     *
+     * @tparam T
+     * @param a
+     * @param b
+     * @return
+     */
+    template<typename T>
+    [[nodiscard]] constexpr helios::math::vec3<T> overlapNormal(
+       const helios::math::aabb<T> a, const helios::math::aabb<T> b) noexcept {
+
+        helios::math::vec3<T> o = overlap(a, b);
+        helios::math::vec3<T> delta =  b.center() - a.center();
+
+        const auto one = static_cast<T>(1);
+        const auto zero = static_cast<T>(0);
+
+        if (o[0] <= o[1] && o[0] <= o[2]) {
+            return helios::math::vec3<T>{delta[0] < zero ? -one : one, zero, zero};
+        }
+
+        if (o[1] <= o[2]) {
+            return helios::math::vec3<T>{zero, delta[1] < zero ? -one : one, zero};
+        }
+
+        return helios::math::vec3<T>{zero, zero, delta[2] < zero ? -one : one};
+    }
+
+    /**
      * @brief Adds a translation vector to an AABB.
      *
      * This operator overload allows the addition of a translation vector
