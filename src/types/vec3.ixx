@@ -199,6 +199,11 @@ export namespace helios::math {
             return *this;
         }
 
+        constexpr vec3<T> operator-=(const vec3<T>& rgt) noexcept {
+            v[0] -= rgt[0]; v[1] -= rgt[1]; v[2] -= rgt[2];
+            return *this;
+        }
+
 
         /**
          * @brief Compares this vector's elements with the rgt vector considering
